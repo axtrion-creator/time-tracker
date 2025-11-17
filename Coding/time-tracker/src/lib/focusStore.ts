@@ -31,6 +31,7 @@ interface FocusState extends PersistedState {
   selectDate: (date: string) => void;
   clearDay: (date: string) => void;
   setDayNote: (date: string, note: string) => void;
+  removeSession: (date: string, session: FocusSession) => void;
 }
 
 export function getDayKey(date: Date = new Date()): string {
@@ -158,5 +159,23 @@ export const useFocusStore = create<FocusState>((set, get) => ({
       }
       persistState({ entries: state.entries, notes: nextNotes, running: state.running });
       return { notes: nextNotes };
+    }),
+  removeSession: (date, session) =>
+    set((state) => {
+      const key = clampDateKey(date);
+      const daySessions = state.entries[key];
+      if (!daySessions?.length) return state;
+      const filtered = daySessions.filter(
+        (item) => item.start !== session.start || item.end !== session.end
+      );
+      if (filtered.length === daySessions.length) return state;
+      const updatedEntries = { ...state.entries };
+      if (filtered.length) {
+        updatedEntries[key] = filtered;
+      } else {
+        delete updatedEntries[key];
+      }
+      persistState({ entries: updatedEntries, notes: state.notes, running: state.running });
+      return { entries: updatedEntries };
     })
 }));

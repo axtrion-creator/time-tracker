@@ -49,7 +49,8 @@ export function FocusTracker() {
     stopSession,
     selectDate,
     clearDay,
-    setDayNote
+    setDayNote,
+    removeSession
   } = useFocusStore((state) => ({
     entries: state.entries,
     notes: state.notes,
@@ -61,7 +62,8 @@ export function FocusTracker() {
     stopSession: state.stopSession,
     selectDate: state.selectDate,
     clearDay: state.clearDay,
-    setDayNote: state.setDayNote
+    setDayNote: state.setDayNote,
+    removeSession: state.removeSession
   }));
 
   useEffect(() => {
@@ -218,19 +220,32 @@ export function FocusTracker() {
               const duration = Math.max(0, Date.parse(session.end) - Date.parse(session.start));
               return (
                 <li key={`${session.start}-${session.end}`}>
-                  <button
-                    type="button"
-                    className="session-row"
-                    onClick={() => selectDate(session.start.slice(0, 10))}
-                  >
-                    <span className="session-label">Session {index + 1} - {formatShort(duration)}</span>
-                    <span className="session-time">
-                      {new Date(session.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -
-                      {" "}
-                      {new Date(session.end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                    <span className="session-duration">{formatDuration(duration)}</span>
-                  </button>
+                  <div className="session-row">
+                    <button
+                      type="button"
+                      className="session-details"
+                      onClick={() => selectDate(session.start.slice(0, 10))}
+                    >
+                      <span className="session-label">Session {index + 1} - {formatShort(duration)}</span>
+                      <span className="session-time">
+                        {new Date(session.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -
+                        {" "}
+                        {new Date(session.end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      <span className="session-duration">{formatDuration(duration)}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="session-remove"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        removeSession(selectedDate, session);
+                      }}
+                      aria-label={`Remove session ${index + 1}`}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </li>
               );
             })}
